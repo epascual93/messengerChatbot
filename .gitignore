@@ -1,0 +1,4 @@
+#Skipping builded artifacts
+MessengerChatbot/bin/*
+MessengerChatbot/obj/*
+
