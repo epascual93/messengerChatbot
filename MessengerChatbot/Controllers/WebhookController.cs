@@ -33,7 +33,7 @@ namespace MessengerChatbot.Controllers
                 {
                     // Responds with the challenge token from the request
                     logger.LogDebug("Webhook verified");
-                    return Ok();
+                    return Ok(challenge);
                 } else
                 {
                     // Responds with '403 Forbidden' if verify tokens do not match
