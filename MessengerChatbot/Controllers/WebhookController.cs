@@ -31,21 +31,45 @@ namespace MessengerChatbot.Controllers
             if (mode != null && token != null){
                 if (mode == "subscribe" && token == VERIFY_TOKEN)
                 {
+                    // Responds with the challenge token from the request
                     logger.LogDebug("Webhook verified");
                     return Ok();
                 } else
                 {
+                    // Responds with '403 Forbidden' if verify tokens do not match
+                    logger.LogDebug("Verify tokens do not match --> Responds with '403 Forbidden'");
                     return Forbid();
                 }
             }
-
             return BadRequest();
         }
 
         // POST '/webhook'
         [HttpPost]
-        public void Post([FromBody] string value)
+        public ActionResult Post([FromBody] dynamic body)
         {
+            var bodyObject = body["object"];
+            if (bodyObject != null && bodyObject == "page")
+            {
+                var bodyEntry = body["entry"];
+
+                foreach (var entry in bodyEntry)
+                {
+                    var webhook_event = entry["messaging"][0];
+                    var sender_psid = webhook_event["sender"]["id"];
+
+                    if (webhook_event["message"] != null)
+                    {
+                        logger.LogDebug("RECEIVED MESSAGE");
+                    } else if (webhook_event["postback"] != null)
+                    {
+                        logger.LogDebug("RECEIVED POSTBACK");
+                    }
+                }
+
+                return Ok("EVENT_RECEIVED");
+            }
+            return NotFound();
         }
     }
 }
