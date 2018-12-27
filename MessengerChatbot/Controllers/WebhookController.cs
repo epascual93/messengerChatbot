@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MessengerChatbot.Models;
+using MessengerChatbot.Models.Messages;
+using MessengerChatbot.Services.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -12,10 +15,13 @@ namespace MessengerChatbot.Controllers
     public class WebhookController : ControllerBase
     {
         ILogger<WebhookController> logger;
+        IApiSender apiSender;
 
-        public WebhookController(ILogger<WebhookController> _logger)
+        public WebhookController(ILogger<WebhookController> _logger,
+                                 IApiSender _apiSender)
         {
             logger = _logger;
+            apiSender = _apiSender;
         }
 
         // GET '/webhook'
@@ -56,10 +62,14 @@ namespace MessengerChatbot.Controllers
                 foreach (var entry in bodyEntry)
                 {
                     var webhook_event = entry["messaging"][0];
-                    var sender_psid = webhook_event["sender"]["id"];
+                    string sender_psid = webhook_event["sender"]["id"];
 
                     if (webhook_event["message"] != null)
                     {
+                        string messageText = webhook_event["message"];
+                        IApiMessage message = new TextMessage("Escribiste " + messageText);
+                        ApiResponse response = new ApiResponse("RESPONSE", sender_psid, message);
+                        apiSender.Send(response);
                         logger.LogDebug("RECEIVED MESSAGE");
                     } else if (webhook_event["postback"] != null)
                     {
